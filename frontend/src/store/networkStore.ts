@@ -21,6 +21,7 @@ interface NetworkActions {
   updateLine: (id: LineId, patch: Partial<Pick<Line, 'name' | 'color' | 'is_loop' | 'code'>>) => void
   setLineStations: (lineId: LineId, stationIds: StationId[]) => void
   deleteLine: (id: LineId) => void
+  clearAll: () => void
   undo: () => void
   redo: () => void
   canUndo: () => boolean
@@ -123,7 +124,7 @@ export const useNetworkStore = create<NetworkState & NetworkActions>((set, get) 
         (e.source === sourceId && e.target === targetId) ||
         (e.source === targetId && e.target === sourceId)
     )
-    if (duplicate) return null
+    if (duplicate) return duplicate.id as EdgeId
 
     const id = uuidv4()
     set((s) => {
@@ -234,7 +235,10 @@ export const useNetworkStore = create<NetworkState & NetworkActions>((set, get) 
       delete lines[id]
       const edges: Record<EdgeId, Edge> = {}
       for (const [eid, edge] of Object.entries(s.network.edges)) {
-        edges[eid] = { ...edge, line_ids: edge.line_ids.filter((lid) => lid !== id) }
+        const remaining = edge.line_ids.filter((lid) => lid !== id)
+        if (remaining.length > 0) {
+          edges[eid] = { ...edge, line_ids: remaining }
+        }
       }
       return {
         past: pushHistory(s.past, s.network),
@@ -242,6 +246,14 @@ export const useNetworkStore = create<NetworkState & NetworkActions>((set, get) 
         network: { ...s.network, edges, lines },
       }
     })
+  },
+
+  clearAll: () => {
+    set((s) => ({
+      past: pushHistory(s.past, s.network),
+      future: [],
+      network: { stations: {}, edges: {}, lines: {} },
+    }))
   },
 
   undo: () => {

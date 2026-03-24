@@ -21,6 +21,11 @@ export function Toolbar({ onGenerateSchematic, generating, validationValid }: Pr
   const redo = useNetworkStore((s) => s.redo)
   const canUndo = useNetworkStore((s) => s.canUndo)
   const canRedo = useNetworkStore((s) => s.canRedo)
+  const clearAll = useNetworkStore((s) => s.clearAll)
+
+  const handleClearAll = () => {
+    if (window.confirm('Delete all stations, edges, and lines?')) clearAll()
+  }
 
   return (
     <div style={{ display: 'flex', gap: 8, padding: '8px 12px', background: '#fff', borderBottom: '1px solid #ddd', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -55,6 +60,12 @@ export function Toolbar({ onGenerateSchematic, generating, validationValid }: Pr
         style={{ padding: '5px 12px', border: '1px solid #ccc', borderRadius: 4, cursor: canRedo() ? 'pointer' : 'default', background: '#f0f0f0', opacity: canRedo() ? 1 : 0.4 }}
       >
         Redo
+      </button>
+      <button
+        onClick={handleClearAll}
+        style={{ padding: '5px 12px', border: '1px solid #e57373', borderRadius: 4, cursor: 'pointer', background: '#fff', color: '#c62828' }}
+      >
+        Clear All
       </button>
       <div style={{ flex: 1 }} />
       <PersistenceBar />
