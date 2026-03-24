@@ -1,0 +1,13 @@
+# Rust
+core/target/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# Internal docs
+plan.md
+research.md
+
+# Claude
+.claude/
