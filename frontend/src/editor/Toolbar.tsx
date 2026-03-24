@@ -11,7 +11,6 @@ interface Props {
 const TOOLS: { mode: ToolMode; label: string }[] = [
   { mode: 'select', label: 'Select' },
   { mode: 'add-station', label: 'Add Station' },
-  { mode: 'add-edge', label: 'Add Edge' },
   { mode: 'delete', label: 'Delete' },
 ]
 

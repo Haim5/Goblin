@@ -3,6 +3,7 @@ import L from 'leaflet'
 import { useUiStore } from '../store/uiStore'
 import { useNetworkStore } from '../store/networkStore'
 import { NetworkOverlay } from './NetworkOverlay'
+import type { EdgeId, LineId } from '../types/network'
 
 export function MapView() {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -10,9 +11,11 @@ export function MapView() {
   const [leafletMap, setLeafletMap] = useState<L.Map | null>(null)
   const pendingSourceRef = useRef<string | null>(null)
   const activeTool = useUiStore((s) => s.activeTool)
+  const activeLineId = useUiStore((s) => s.activeLineId)
   const setSelectedId = useUiStore((s) => s.setSelectedId)
   const addStation = useNetworkStore((s) => s.addStation)
   const addEdge = useNetworkStore((s) => s.addEdge)
+  const assignEdgeToLine = useNetworkStore((s) => s.assignEdgeToLine)
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return
@@ -37,10 +40,9 @@ export function MapView() {
         addStation(name || 'New Station', e.latlng.lat, e.latlng.lng)
       } else if (activeTool === 'add-edge') {
         pendingSourceRef.current = null
-        setSelectedId(null)
       }
     },
-    [activeTool, addStation, setSelectedId]
+    [activeTool, addStation]
   )
 
   const handleStationClick = useCallback(
@@ -51,12 +53,15 @@ export function MapView() {
         if (!pendingSourceRef.current) {
           pendingSourceRef.current = stationId
         } else if (pendingSourceRef.current !== stationId) {
-          addEdge(pendingSourceRef.current, stationId)
+          const edgeId: EdgeId | null = addEdge(pendingSourceRef.current, stationId)
+          if (edgeId && activeLineId) {
+            assignEdgeToLine(edgeId, activeLineId as LineId)
+          }
           pendingSourceRef.current = null
         }
       }
     },
-    [activeTool, setSelectedId, addEdge]
+    [activeTool, activeLineId, setSelectedId, addEdge, assignEdgeToLine]
   )
 
   useEffect(() => {
